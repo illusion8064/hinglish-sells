@@ -1,0 +1,110 @@
+/* Hinglish Sells? — experiment styles. Mobile-first, no external CSS frameworks. */
+:root {
+  --navy: #13294B; --teal: #127C84; --ink: #1D2433; --muted: #5C6578;
+  --line: #D9DEE7; --bg: #F4F6FA; --card: #FFFFFF; --warm: #E07A2F; --bad: #C0392B; --good: #1E8449;
+  --radius: 14px;
+  font-family: "Noto Sans", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); }
+body { min-height: 100vh; -webkit-text-size-adjust: 100%; }
+
+/* top bar + progress */
+.topbar { position: sticky; top: 0; z-index: 5; background: var(--navy); color: #fff; padding: 8px 16px 10px; }
+.brandline { font-size: 12px; letter-spacing: .04em; opacity: .85; }
+.progress { height: 6px; background: rgba(255,255,255,.2); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+#progress-fill { height: 100%; width: 0; background: var(--warm); transition: width .4s ease; }
+.progress-label { font-size: 12px; margin-top: 4px; min-height: 16px; opacity: .9; }
+
+main { padding: 16px; display: flex; justify-content: center; }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 14px rgba(19,41,75,.08);
+        padding: 22px 20px 26px; width: 100%; max-width: 720px; line-height: 1.55; }
+.card.wide { max-width: 860px; }
+h1 { font-size: 1.45rem; color: var(--navy); margin: 0 0 .5rem; }
+h2 { font-size: 1.25rem; color: var(--navy); margin: 0 0 .6rem; }
+h3 { font-size: 1rem; color: var(--teal); margin: 1.2rem 0 .3rem; }
+.lead { font-size: 1.02rem; }
+.small { font-size: .86rem; color: var(--muted); }
+.opt { color: var(--muted); font-weight: 400; font-size: .85rem; }
+.err { color: var(--bad); font-weight: 600; }
+.ok { color: var(--good); font-weight: 600; }
+.warn { background: #FFF4E5; border: 1px solid #F2C38B; padding: 10px 14px; border-radius: 10px; }
+.pid { font-family: ui-monospace, Consolas, monospace; font-size: 1.05rem; letter-spacing: .05em; }
+
+.btn { font: inherit; border: 1px solid var(--line); background: #fff; color: var(--navy); padding: 12px 20px;
+       border-radius: 10px; cursor: pointer; margin-top: 18px; min-height: 46px; }
+.btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; font-weight: 600; width: 100%; }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn.withdraw { color: var(--bad); border-color: #E8B4AE; }
+
+/* questions */
+.q { padding: 12px 0; border-bottom: 1px solid #EEF1F5; }
+.q.missing { background: #FFF5F4; border-left: 4px solid var(--bad); padding-left: 10px; }
+.q-text { font-weight: 600; margin-bottom: 8px; }
+.choices { display: grid; gap: 8px; }
+.choice { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line);
+          border-radius: 10px; cursor: pointer; background: #fff; }
+.choice:has(input:checked) { border-color: var(--teal); background: #EAF6F6; }
+.choice input { margin-top: 4px; accent-color: var(--teal); width: 18px; height: 18px; flex: none; }
+.consent-box { margin-top: 16px; display: grid; gap: 8px; }
+input.num, input[type=text], textarea { font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 8px; width: 100%; max-width: 420px; }
+input.num { max-width: 140px; }
+.deva-big { font-family: "Noto Sans Devanagari", sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--navy); margin-left: 6px; }
+.pct { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.pct label { display: flex; gap: 6px; align-items: center; }
+.pct input { width: 76px; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px; }
+.pct-total.bad b { color: var(--bad); }
+
+/* n-point scales (semantic differential / LEAP-Q 0-10) */
+.scale { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.scale .anchor { font-size: .86rem; color: var(--muted); }
+.scale .anchor.r { text-align: right; }
+.pts { display: flex; gap: 4px; justify-content: space-between; }
+.pt { flex: 1; display: flex; justify-content: center; cursor: pointer; }
+.pt input { position: absolute; opacity: 0; pointer-events: none; }
+.pt span { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 46px; height: 40px;
+           border: 1.5px solid #B9C2D0; border-radius: 9px; font-size: .9rem; color: var(--muted); background: #fff; }
+.pt input:checked + span { background: var(--teal); border-color: var(--teal); color: #fff; font-weight: 700; }
+.pt input:focus-visible + span { outline: 3px solid #F2B880; }
+@media (min-width: 640px) {
+  .scale { grid-template-columns: 150px 1fr 150px; align-items: center; gap: 10px; }
+  .scale .anchor.l { text-align: right; }
+  .scale .anchor.r { text-align: left; }
+}
+
+/* rating page */
+.rate-head { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.pill { background: var(--navy); color: #fff; border-radius: 99px; padding: 3px 12px; font-size: .85rem; font-weight: 600; }
+.rblock { margin-top: 14px; }
+.rprompt { font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.ritem { padding: 8px 6px; border-radius: 8px; }
+.ritem:nth-child(even) { background: #F7F9FC; }
+.ritem.missing { background: #FFF1EF; box-shadow: inset 4px 0 0 var(--bad); }
+.attn-text { font-size: .9rem; font-weight: 600; margin-bottom: 4px; }
+
+/* instructions */
+.brands { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 12px 0; }
+.brand-card { border-left: 6px solid var(--teal); background: #F7F9FC; border-radius: 10px; padding: 10px 12px; display: grid; }
+.brand-card b { font-size: 1.05rem; letter-spacing: .04em; }
+.brand-card span { color: var(--muted); font-size: .9rem; text-transform: capitalize; }
+.steps li { margin-bottom: 6px; }
+.example { background: #F7F9FC; border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+
+/* ===== exposure stage & ad template ===== */
+.stage { width: 100%; min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.fix { color: var(--muted); font-size: 1.1rem; letter-spacing: .05em; }
+.exp-timer { width: min(96vw, calc((100vh - 120px) * 16 / 9), 960px); height: 4px; background: #E3E7EE; border-radius: 2px; margin-top: 14px; overflow: hidden; }
+.exp-timer i { display: block; height: 100%; width: 0; background: #9AA6B8; }
+.exp-timer.run i { animation: fill linear forwards; }
+@keyframes fill { from { width: 0 } to { width: 100% } }
+
+/* Image ads (16:9). Every ad is shown at the same size on a given screen:
+   the largest 16:9 box that fits the viewport (max 960 px wide). */
+.ad { width: min(96vw, calc((100vh - 120px) * 16 / 9), 960px); aspect-ratio: 16 / 9; position: relative;
+      overflow: hidden; border-radius: 8px; box-shadow: 0 6px 26px rgba(0,0,0,.14); background: #e9edf2;
+      user-select: none; -webkit-user-select: none; }
+.ad img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+.toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff;
+         padding: 10px 16px; border-radius: 10px; z-index: 20; font-size: .92rem; max-width: 90vw; }

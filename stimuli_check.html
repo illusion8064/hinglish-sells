@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Stimulus check (researchers only)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { padding: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 1200px; }
+    .cell img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; display: block; }
+    .cap { font-size: 12px; color: #5C6578; margin: 3px 0 8px; }
+    .rowhead { grid-column: 1 / -1; font-weight: 700; color: #13294B; margin-top: 8px; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    td, th { border: 1px solid #D9DEE7; padding: 4px 8px; text-align: left; }
+    .FAIL { color: #C0392B; font-weight: 700; } .PASS { color: #1E8449; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h2>Stimulus check — all 24 ads (researchers only)</h2>
+  <p class="small">Loads every ad exactly as the experiment does. Checks: every file loads, and the three language
+    versions of each product have identical pixel dimensions. Visual equivalence (same picture, layout and pack design
+    apart from the slogan) must be judged by eye in the grid below.</p>
+  <div id="out"></div>
+  <script src="js/config.js"></script>
+  <script>
+  (async function () {
+    const out = document.getElementById("out");
+    const grid = document.createElement("div"); grid.className = "grid";
+    const res = {};
+    let allOK = true;
+    for (const [slot, pr] of Object.entries(STUDY.products)) {
+      grid.insertAdjacentHTML("beforeend", `<div class="rowhead">${slot} · ${pr.brand} · ${pr.product} (${pr.category})</div>`);
+      res[slot] = [];
+      for (const lang of ["E", "H", "X"]) {
+        const img = new Image(); img.src = STUDY.adImage(slot, lang);
+        let ok = true; try { await img.decode(); } catch (e) { ok = false; }
+        res[slot].push({ lang, ok, w: img.naturalWidth, h: img.naturalHeight });
+        const c = document.createElement("div"); c.className = "cell";
+        c.innerHTML = `<img src="${img.src}" alt=""><div class="cap">${lang}: ${pr.slogans[lang]} — ${ok ? img.naturalWidth + "×" + img.naturalHeight : "NOT LOADED"}</div>`;
+        grid.appendChild(c);
+      }
+    }
+    let html = "<table><tr><th>Product</th><th>Loaded E/H/X</th><th>Size E/H/X</th><th>Result</th></tr>";
+    for (const [slot, v] of Object.entries(res)) {
+      const ok = v.every(x => x.ok) && new Set(v.map(x => x.w + "x" + x.h)).size === 1;
+      allOK = allOK && ok;
+      html += `<tr><td>${slot} ${STUDY.products[slot].brand}</td><td>${v.map(x => x.ok ? "yes" : "NO").join(" / ")}</td>
+        <td>${v.map(x => x.w + "×" + x.h).join(" / ")}</td><td class="${ok ? "PASS" : "FAIL"}">${ok ? "PASS" : "FAIL"}</td></tr>`;
+    }
+    out.innerHTML = html + "</table>";
+    out.appendChild(grid);
+    document.body.dataset.result = allOK ? "PASS" : "FAIL";
+    document.body.dataset.summary = JSON.stringify(res);
+  })();
+  </script>
+</body>
+</html>

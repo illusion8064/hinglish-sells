@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+  <title>Product survey — IIIT Hyderabad</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<header class="topbar"><div class="brandline">IIIT Hyderabad · Product survey (pretest 1)</div>
+  <div class="progress"><div id="progress-fill"></div></div><div class="progress-label"></div></header>
+<main id="app"><section class="card"><p>Loading…</p></section></main>
+<script src="../js/config.js"></script>
+<script src="pretest.js"></script>
+<script>
+/* PRODUCT PRETEST (separate sample, ~30 college students; ~10 min)
+   Purpose: objective selection of 2 necessities + 2 luxuries for the main study.
+   Products: the 8 study products (4 intended necessities, 4 intended luxuries) plus
+   4 filler/alternative goods, so that classification is not obvious from the list.
+   Measures per product: luxury-necessity (Bearden & Etzel, 1982, 6 points, as in K&A
+   pretest 3); familiarity; own purchase frequency; expected price band; liking;
+   importance of country of origin (K&A selection criterion iv); social visibility
+   (Bearden & Etzel's public-private dimension); relevance of sophistication and
+   belongingness (K&A pretest 2). Then brand-name familiarity/pronounceability. */
+// first 8 = study products (names must match tools/select_products.py STUDY_PRODUCTS); last 4 = alternatives
+const CANDIDATES = ["Detergent powder", "Toothpaste", "Atta (wheat flour)", "Cooking oil",
+  "Chocolate bar", "Ice cream (tub)", "Perfume", "Sunglasses",
+  "Bath soap", "Shampoo", "Potato chips", "Soft drink (cola)"];
+const BRANDS = ["Brevano", "Corvane", "Millora", "Olivaro", "Velmora", "Zelvia", "Aurévia", "Solvane",
+  "Colgate", "Amul"];  // last two = real-brand controls
+
+(async () => {
+  const P = PRETEST;
+  if (!(await P.consentPage("Product survey", "You will rate 12 everyday products and 10 brand names.", 12))) return P.notEligible();
+  const rows = [];
+  const order = P.shuffle(CANDIDATES);
+  for (let i = 0; i < order.length; i++) {
+    const prod = order[i];
+    const r = await P.page(`Product ${i + 1} of ${order.length}: <span style="color:var(--teal)">${prod}</span>`,
+      "<p class='small'>Think about this type of product in general, not a particular brand.</p>", [
+      { id: "luxnec", type: "scale", n: 6, q: "Is this product a luxury or a necessity?", l: "1 = A luxury for everyone", r: "6 = A necessity for everyone" },
+      { id: "familiar", type: "scale", n: 7, q: "How familiar are you with this type of product?", l: "Not at all familiar", r: "Extremely familiar" },
+      { id: "buy_freq", type: "radio", q: "How often do you buy this type of product yourself?",
+        options: ["Never", "Less than once a month", "About once a month", "Several times a month", "Weekly or more"] },
+      { id: "price_band", type: "radio", q: "What would you expect to pay for one regular pack?",
+        options: ["Under ₹50", "₹50–99", "₹100–199", "₹200–399", "₹400–799", "₹800 or more"] },
+      { id: "liking", type: "scale", n: 7, q: "How much do you like this type of product?", l: "Dislike a lot", r: "Like a lot" },
+      { id: "coo_matters", type: "scale", n: 7, q: "When buying it, how much does the country a brand comes from matter to you?", l: "Not at all", r: "Very much" },
+      { id: "visibility", type: "scale", n: 7, q: "When you use it, how visible is it to other people?", l: "Used privately", r: "Used publicly" },
+      { id: "imp_soph", type: "scale", n: 7, q: "When choosing a brand of this product, how important is it that the brand feels <b>sophisticated and global</b>?", l: "Not important", r: "Very important" },
+      { id: "imp_belong", type: "scale", n: 7, q: "When choosing a brand of this product, how important is it that the brand feels <b>close and friendly</b>?", l: "Not important", r: "Very important" }
+    ], 5 + 70 * i / order.length);
+    rows.push(Object.assign({ row_type: "product", item: prod, presentation_pos: i + 1 }, r));
+  }
+  const bOrder = P.shuffle(BRANDS);
+  for (let i = 0; i < bOrder.length; i++) {
+    const b = bOrder[i];
+    const r = await P.page(`Brand name ${i + 1} of ${bOrder.length}: <span style="color:var(--teal)">${b}</span>`, "", [
+      { id: "heard", type: "radio", q: `Have you heard of a brand called <b>${b}</b> before?`, options: ["Yes", "No", "Not sure"] },
+      { id: "reminds", type: "text", required: false, q: "Does this name remind you of any brand you know? If yes, which one?" },
+      { id: "pronounce", type: "scale", n: 7, q: "How easy is this name to pronounce?", l: "Very difficult", r: "Very easy" },
+      { id: "origin_guess", type: "radio", q: "Where do you think a brand with this name comes from?",
+        options: ["India", "Another country", "No idea"] }
+    ], 76 + 18 * i / bOrder.length);
+    rows.push(Object.assign({ row_type: "brand", item: b, presentation_pos: i + 1, real_brand_control: ["Colgate", "Amul"].includes(b) ? 1 : 0 }, r));
+  }
+  const d = await P.page("About you", "", [
+    { id: "age", type: "radio", q: "Age", options: ["18–20", "21–23", "24–26", "27+"] },
+    { id: "gender", type: "radio", q: "Gender", options: ["Woman", "Man", "Non-binary / another gender", "Prefer not to say"] }
+  ], 96);
+  rows.forEach(r => Object.assign(r, d));
+  P.submit("products", rows);
+})();
+</script>
+</body>
+</html>

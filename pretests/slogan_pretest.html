@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+  <title>Slogan survey — IIIT Hyderabad</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=block">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>.slogan-show{font-size:1.5rem;font-weight:700;color:var(--navy);padding:14px;background:#F7F9FC;border-radius:10px;text-align:center;margin:8px 0}
+         .slogan-show[lang=hi]{font-family:"Noto Sans Devanagari",sans-serif}
+         .ad-show{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;margin:8px 0}</style>
+</head>
+<body>
+<header class="topbar"><div class="brandline">IIIT Hyderabad · Slogan survey (pretest 2)</div>
+  <div class="progress"><div id="progress-fill"></div></div><div class="progress-label"></div></header>
+<main id="app"><section class="card"><p>Loading…</p></section></main>
+<script src="../js/config.js"></script>
+<script src="pretest.js"></script>
+<script>
+/* SLOGAN PRETEST (separate sample, ~36 college students = 12 per list; ~10 min)
+   Replicates Krishna & Ahluwalia (2008) pretest 4: each participant rates ONE language
+   version of each product's slogan (clarity, appeal, flow; 7-point), so that versions are
+   compared between participants, without side-by-side comparison. Added: naturalness and
+   an open paraphrase to check meaning equivalence (coded blind by two researchers).
+   The finished ad image is shown (the slogan is part of the image), so the pretest also
+   catches visual differences between language versions.
+   List assignment: Latin square — list k shows product slot i in language LANGS[(i + k) % 3],
+   so every participant sees every language 2-3 times and each version is rated by 1/3 of
+   the sample. Products and images come from js/config.js (single source of truth). */
+const LANGS = ["E", "H", "X"];
+(async () => {
+  const P = PRETEST;
+  if (!(await P.consentPage("Slogan survey", "You will see 8 advertisements for new brands and rate the slogan of each one.", 10))) return P.notEligible();
+  const list = Number(new URLSearchParams(location.search).get("list")) || (1 + P.rnd(3));   // 1..3
+  const SLOTS = Object.keys(STUDY.products);
+  const slots = P.shuffle(SLOTS);
+  const rows = [];
+  for (let n = 0; n < slots.length; n++) {
+    const slot = slots[n], idx = SLOTS.indexOf(slot);
+    const lang = LANGS[(idx + list - 1) % 3];
+    const pr = STUDY.products[slot];
+    const r = await P.page(`Ad ${n + 1} of ${slots.length}`,
+      `<p>A new <b>${pr.product}</b> brand, <b>${pr.brand}</b>, plans to use this ad. Please focus on its <b>slogan</b>:</p>
+       <img class="ad-show" src="../${STUDY.adImage(slot, lang)}" alt="ad">`, [
+      { id: "clarity", type: "scale", n: 7, q: "How clearly does the slogan communicate its meaning?", l: "Not at all clearly", r: "Very clearly" },
+      { id: "appeal", type: "scale", n: 7, q: "How appealing is the slogan?", l: "Not at all appealing", r: "Very appealing" },
+      { id: "flow", type: "scale", n: 7, q: "How well does the slogan flow?", l: "Does not flow well", r: "Flows very well" },
+      { id: "natural", type: "scale", n: 7, q: "How natural does the wording sound — like something a real brand in India would say?", l: "Very unnatural", r: "Very natural" },
+      { id: "paraphrase", type: "text", q: "In your own words (in English), what is the slogan saying?" }
+    ], 10 + 80 * n / slots.length);
+    rows.push(Object.assign({ list, slot, product: pr.product, language: lang, slogan: pr.slogans[lang], presentation_pos: n + 1 }, r));
+  }
+  const d = await P.page("About you", "", [
+    { id: "hindi_read", type: "scale", n: 11, start: 0, q: "Your proficiency in reading Hindi in Devanagari script", l: "0 = none", r: "10 = perfect" },
+    { id: "english_read", type: "scale", n: 11, start: 0, q: "Your proficiency in reading English", l: "0 = none", r: "10 = perfect" }
+  ], 95);
+  rows.forEach(r => Object.assign(r, d));
+  P.submit("slogans", rows);
+})();
+</script>
+</body>
+</html>
